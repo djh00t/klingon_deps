@@ -9,7 +9,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "klingon_deps=klingon_deps.cli:main",
+            "klingon-deps=klingon_deps.cli:main",
         ],
     },
 )
