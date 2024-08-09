@@ -29,6 +29,7 @@ tabulate
 toml
 twine
 wheel
+poetry
 
 # Standard library modules used:
 # os
