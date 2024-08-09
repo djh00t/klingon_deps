@@ -1,0 +1,6 @@
+*.yaml linguist-language=YAML
+*.yml linguist-language=YAML
+*.json linguist-language=JSON
+LICENSE linguist-language=LICENSE
+*.md linguist-language=Markdown
+*.in linguist-language=PIP_COMPILE_SOURCE
