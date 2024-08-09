@@ -98,7 +98,8 @@ uninstall:
 test:
 	@pip install pytest
 	@echo "Running unit tests..."
-	pytest --no-header --no-summary -v --disable-warnings tests/
+	pytest -v --tb=short tests/
+#	pytest --no-header --no-summary -v --disable-warnings tests/
 
 ## update-version: Read the version number from VERSION file and save it as
 ## CURRENT_VERSION variable it will look like A.B.C Increment the third (C)
