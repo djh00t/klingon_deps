@@ -109,8 +109,35 @@ dependencies:
       ubuntu:
         - sudo apt-get install -y python3
 
+  - name: node
+    type: runtime
+    install:
+      macos:
+        - brew install node
+      ubuntu:
+        - curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+        - sudo apt-get install -y nodejs
+
+  - name: rust
+    type: language
+    install:
+      macos:
+        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+      ubuntu:
+        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+  - name: go
+    type: language
+    install:
+      macos:
+        - brew install go
+      ubuntu:
+        - sudo apt-get install -y golang-go
+
   # Add more language-specific dependencies here
 ```
+
+In this expanded example, we've added more languages and runtimes to showcase the flexibility of the `.klingon_pkg_dep.yaml` file. You can specify different installation commands for different operating systems, and include various types of dependencies (languages, tools, runtimes, etc.).
 
 ### .klingon_user.yaml
 
@@ -122,39 +149,86 @@ Example `.klingon_user.yaml`:
 enabled_languages:
   - Python
   - JavaScript
+  - Rust
 
 disabled_languages:
   - Ruby
+  - Go
+
+user_preferences:
+  default_package_manager: npm
+  auto_update: true
 ```
 
-## Examples
+This example shows how you can not only specify enabled and disabled languages but also set user preferences that could be used by Klingon Deps for further customization of its behavior.
 
-### Scanning a Repository
+## Detailed Usage Examples
 
-To scan your current repository for languages and set up dependencies:
+### Basic Repository Scan
+
+To perform a basic scan of your current repository:
 
 ```bash
 cd /path/to/your/repo
 klingon-deps
 ```
 
-This will detect languages, prompt you to enable/disable them, and update your `.klingon_user.yaml` file.
+This will:
+1. Detect languages in your repository
+2. Display a table of detected languages with their percentages
+3. Prompt you to enable/disable each detected language
+4. Update your `.klingon_user.yaml` file with your choices
 
-### Using a Custom Dependency File
+### Verbose Scan with Custom Dependency File
 
-If you have a custom dependency file location:
-
-```bash
-klingon-deps --pkgdep /path/to/custom/.klingon_pkg_dep.yaml
-```
-
-### Verbose Output
-
-For more detailed logging:
+For a more detailed output and using a custom dependency file:
 
 ```bash
-klingon-deps --verbose
+klingon-deps --verbose --pkgdep /path/to/custom/.klingon_pkg_dep.yaml
 ```
+
+This command will:
+1. Use the specified custom dependency file
+2. Provide detailed logging of the detection and installation process
+3. Show you exactly what's happening at each step
+
+### Using Klingon Deps in a Python Script
+
+Here's a more detailed example of using Klingon Deps in a Python script:
+
+```python
+from klingon_deps import LanguageDetector, ConfigManager, DependencyManager
+
+# Initialize components
+config_manager = ConfigManager()
+detector = LanguageDetector(verbose=True, config_manager=config_manager)
+dep_manager = DependencyManager(verbose=True)
+
+# Install dependencies
+dep_manager.install_dependencies()
+
+# Detect languages
+detected_languages = detector.detect_languages()
+
+print("Detected Languages:")
+for lang, percentage in detected_languages:
+    print(f"{lang}: {percentage}")
+
+# Prompt user for language activation
+language_status = detector.prompt_user_for_languages(detected_languages)
+
+# Print language activation status
+detector.print_language_activation_status(language_status)
+
+# Get enabled languages
+enabled_langs = config_manager.get_enabled_languages()
+print(f"Enabled languages: {', '.join(enabled_langs)}")
+
+# Update a language status
+config_manager.update_language("Python", True)
+```
+
+This script demonstrates how to use various components of Klingon Deps to detect languages, manage dependencies, and update configurations programmatically.
 
 ## Contributing
 
