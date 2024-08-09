@@ -39,3 +39,4 @@ wheels/
 
 # macOS
 .DS_Store
+.aider*
