@@ -1,0 +1,64 @@
+dependencies:
+  - name: github-linguist
+    type: tool
+    install:
+      macos:
+        - |
+          if ! command -v rbenv &> /dev/null; then
+            echo "Installing rbenv and ruby-build"
+            brew install rbenv ruby-build
+          else
+            echo "rbenv is already installed"
+          fi
+        - |
+          latest_ruby=$(rbenv install -l | grep -v - | tail -1)
+          if ! rbenv versions | grep -q "$latest_ruby"; then
+            echo "Installing Ruby $latest_ruby"
+            rbenv install --skip-existing "$latest_ruby"
+          else
+            echo "Ruby $latest_ruby is already installed"
+          fi
+        - latest_ruby=$(rbenv install -l | grep -v - | tail -1)
+        - rbenv global "$latest_ruby"
+        - rbenv rehash
+        - gem update --system
+        - |
+          if ! gem list -i "^github-linguist$" > /dev/null 2>&1; then
+            echo "Installing github-linguist"
+            gem install github-linguist
+          else
+            echo "github-linguist is already installed"
+          fi
+      ubuntu:
+        - |
+          if ! command -v rbenv &> /dev/null; then
+            echo "Installing rbenv and dependencies"
+            sudo apt-get install -y build-essential libssl-dev libreadline-dev zlib1g-dev libsqlite3-dev libbz2-dev libffi-dev libncurses5-dev libgdbm-dev libgdbm-compat-dev libdb-dev libgmp-dev libexpat1-dev
+            curl -fsSL https://github.com/rbenv/rbenv-installer/raw/main/bin/rbenv-installer | bash
+          else
+            echo "rbenv is already installed"
+          fi
+        - export PATH="$HOME/.rbenv/bin:$PATH"
+        - eval "$(rbenv init -)"
+        - |
+          latest_ruby=$(rbenv install -l | grep -v - | tail -1)
+          if ! rbenv versions | grep -q "$latest_ruby"; then
+            echo "Installing Ruby $latest_ruby"
+            rbenv install --skip-existing "$latest_ruby"
+          else
+            echo "Ruby $latest_ruby is already installed"
+          fi
+        - latest_ruby=$(rbenv install -l | grep -v - | tail -1)
+        - rbenv global "$latest_ruby"
+        - rbenv rehash
+        - gem update --system
+        - |
+          if ! gem list -i "^github-linguist$" > /dev/null 2>&1; then
+            echo "Installing github-linguist"
+            gem install github-linguist
+          else
+            echo "github-linguist is already installed"
+          fi
+
+run:
+  - github-linguist
