@@ -9,17 +9,15 @@ def write_file(path, content):
         f.write(textwrap.dedent(content))
 
 def generate_repo_structure():
-    # Create main directory
-    create_directory('klingon_deps')
-
     # Create subdirectories
-    create_directory('klingon_deps/klingon_deps')
-    create_directory('klingon_deps/tests')
-    create_directory('klingon_deps/docs')
+    create_directory('klingon_deps')
+    create_directory('tests')
+    create_directory('docs')
+    create_directory('.github/workflows')
 
     # Create main package files
-    write_file('klingon_deps/klingon_deps/__init__.py', '')
-    write_file('klingon_deps/klingon_deps/config_manager.py', '''
+    write_file('klingon_deps/__init__.py', '')
+    write_file('klingon_deps/config_manager.py', '''
     """Module for managing the .kdepsrc configuration file."""
 
     import yaml
@@ -48,7 +46,7 @@ def generate_repo_structure():
             self.write_config(config)
     ''')
 
-    write_file('klingon_deps/klingon_deps/language_detector.py', '''
+    write_file('klingon_deps/language_detector.py', '''
     """Module for detecting programming languages in a repository."""
 
     import os
@@ -71,7 +69,7 @@ def generate_repo_structure():
             return list(languages)
     ''')
 
-    write_file('klingon_deps/klingon_deps/dependency_manager.py', '''
+    write_file('klingon_deps/dependency_manager.py', '''
     """Module for managing project dependencies."""
 
     import yaml
@@ -95,7 +93,7 @@ def generate_repo_structure():
                 # Add more package manager support here
     ''')
 
-    write_file('klingon_deps/klingon_deps/cli.py', '''
+    write_file('klingon_deps/cli.py', '''
     """Command-line interface for klingon_deps."""
 
     import argparse
@@ -128,7 +126,7 @@ def generate_repo_structure():
     ''')
 
     # Create setup.py
-    write_file('klingon_deps/setup.py', '''
+    write_file('setup.py', '''
     from setuptools import setup, find_packages
 
     setup(
@@ -147,7 +145,7 @@ def generate_repo_structure():
     ''')
 
     # Create README.md
-    write_file('klingon_deps/README.md', '''
+    write_file('README.md', '''
     # Klingon Deps
 
     Klingon Deps is a dependency management library for multi-language projects.
@@ -182,7 +180,7 @@ def generate_repo_structure():
     ''')
 
     # Create LICENSE file
-    write_file('klingon_deps/LICENSE', '''
+    write_file('LICENSE', '''
     MIT License
 
     Copyright (c) 2024 Your Name
@@ -204,6 +202,96 @@ def generate_repo_structure():
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
+    ''')
+
+    # Create GitHub Actions workflow for semantic-release
+    write_file('.github/workflows/release.yml', '''
+    name: Release
+    on:
+      push:
+        branches:
+          - main
+    jobs:
+      release:
+        name: Release
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v2
+            with:
+              fetch-depth: 0
+          - name: Setup Node.js
+            uses: actions/setup-node@v2
+            with:
+              node-version: 'lts/*'
+          - name: Install dependencies
+            run: npm install -g semantic-release @semantic-release/git @semantic-release/changelog
+          - name: Release
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+            run: npx semantic-release
+    ''')
+
+    # Create .releaserc.json for semantic-release configuration
+    write_file('.releaserc.json', '''
+    {
+      "branches": ["main"],
+      "plugins": [
+        "@semantic-release/commit-analyzer",
+        "@semantic-release/release-notes-generator",
+        "@semantic-release/changelog",
+        "@semantic-release/github",
+        ["@semantic-release/git", {
+          "assets": ["CHANGELOG.md", "package.json"],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\\n\\n${nextRelease.notes}"
+        }]
+      ]
+    }
+    ''')
+
+    # Create .gitignore
+    write_file('.gitignore', '''
+    # Python
+    __pycache__/
+    *.py[cod]
+    *.so
+    
+    # Environments
+    .env
+    .venv
+    env/
+    venv/
+    
+    # Distribution / packaging
+    .Python
+    build/
+    develop-eggs/
+    dist/
+    downloads/
+    eggs/
+    .eggs/
+    lib/
+    lib64/
+    parts/
+    sdist/
+    var/
+    wheels/
+    *.egg-info/
+    .installed.cfg
+    *.egg
+    
+    # PyCharm
+    .idea/
+    
+    # VS Code
+    .vscode/
+    
+    # Jupyter Notebook
+    .ipynb_checkpoints
+    
+    # macOS
+    .DS_Store
     ''')
 
     print("Repository structure generated successfully.")
