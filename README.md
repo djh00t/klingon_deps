@@ -5,7 +5,7 @@ Klingon Deps is a dependency management library for multi-language projects.
 ## Features
 
 - Scan repositories for programming languages
-- Manage language configurations in `.kdepsrc`
+- Manage language configurations in `.klingon_user.yaml`
 - Install dependencies from YAML configuration files
 
 ## Installation
@@ -21,14 +21,31 @@ Scan repository and configure languages:
 klingon_deps --scan
 ```
 
-Install dependencies from YAML file:
+Install dependencies:
 ```
-klingon_deps --pkgdep dependencies.yaml
+klingon_deps
 ```
 
-## Dependencies YAML File Format
+## Configuration Files
 
-The `dependencies.yaml` file specifies project dependencies. It supports OS-specific, language-specific, and general dependencies. Here's the format:
+### 1. `.klingon_pkg_deps.yaml`
+
+This is the main dependency configuration file. It should be located in the root of the repository by default.
+
+### 2. `.klingon_user.yaml`
+
+This file contains user-specific configurations, including enabled languages.
+
+## Dependency Resolution Process
+
+1. The tool first looks for `.klingon_pkg_deps.yaml` in the root of the repository.
+2. If not found, it checks for a file specified by the `--pkgdep` argument.
+3. If neither is found, it looks for `.klingon_user.yaml` in the root of the repository.
+4. If none of the above files are found, it runs a scan process over the current repository to generate a configuration.
+
+## `.klingon_pkg_deps.yaml` File Format
+
+The `.klingon_pkg_deps.yaml` file specifies project dependencies. It supports OS-specific, language-specific, and general dependencies. Here's the format:
 
 ```yaml
 dependencies:
@@ -39,7 +56,6 @@ dependencies:
     language: programming_language
     manager: package_manager
     command: install_command
-
 ```
 
 ### Fields:
@@ -52,18 +68,12 @@ dependencies:
 - `manager`: (Optional) Package manager to use (e.g., "pip", "npm", "cargo").
 - `command`: (Optional) Custom install command if the standard package manager command doesn't suffice.
 
-### Example `dependencies.yaml`:
+### Example `.klingon_pkg_deps.yaml`:
 
 ```yaml
 dependencies:
   - name: requests
     version: ">=2.25.1"
-    type: library
-    language: python
-    manager: pip
-
-  - name: numpy
-    version: "==1.21.0"
     type: library
     language: python
     manager: pip
@@ -81,16 +91,6 @@ dependencies:
     os: all
     command: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-  - name: docker
-    type: tool
-    os: macos
-    command: brew install docker
-
-  - name: gcc
-    type: compiler
-    os: linux
-    command: sudo apt-get install build-essential
-
   - name: react
     version: "^17.0.2"
     type: framework
@@ -105,13 +105,22 @@ dependencies:
     os: all
 ```
 
-This example includes various types of dependencies:
-- Language-specific libraries (requests, numpy, react, sqlalchemy)
-- Runtime environments (nodejs)
-- Programming languages (rust)
-- Development tools (docker, gcc)
+## `.klingon_user.yaml` File Format
 
-The `klingon_deps` tool will process this file and install the dependencies based on the current operating system, specified languages, and other criteria.
+This file contains user-specific configurations, including enabled languages.
+
+```yaml
+enabled_languages:
+  - python
+  - javascript
+  - rust
+
+user_preferences:
+  default_package_manager: pip
+  auto_update: true
+```
+
+The `klingon_deps` tool will process these files and install the dependencies based on the current operating system, specified languages, and other criteria.
 
 ## License
 
