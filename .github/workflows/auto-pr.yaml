@@ -33,6 +33,12 @@ jobs:
             ${{ runner.os }}-pip-cache-${{ hashFiles('**/requirements.txt') }}
             ${{ runner.os }}-pip-cache-
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+
       - name: Set up environment variables
         run: |
           # Setup GITHUB_TOKEN
@@ -57,14 +63,18 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
 
-      - name: Install Python Requirements
+      - name: Install Dependencies
         run: make install
 
       - name: Run Unit Tests
         run: make test
 
-      # Check if PR exists, if it doesn't create one with a generated title using
-      # pr-title-generate
+      - name: Ensure Node.js and npm are installed
+        run: make ensure-node
+
+      - name: Ensure semantic-release is installed
+        run: make ensure-semantic-release
+
       - name: Create or Update PR
         id: pr
         run: |
@@ -89,3 +99,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_TITLE: ${{ env.PR_TITLE }}
         shell: /usr/bin/bash -e {0}
+
+      - name: Run Semantic Release
+        run: make release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
