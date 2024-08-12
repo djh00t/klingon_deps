@@ -101,37 +101,42 @@ test:
 	pytest -v --tb=short tests/
 #	pytest --no-header --no-summary -v --disable-warnings tests/
 
-## update-version: Read the version number from VERSION file and save it as
-## CURRENT_VERSION variable it will look like A.B.C Increment the third (C)
-## number by 1 and write it back to the VERSION file. Validate that the new
-## version number is valid and echo it to console then commit it to git and
-## push to origin. Confirm that VERSION and setup.py are in sync.
-update-version:
-	@CURRENT_VERSION=$$(cat VERSION); \
-	echo "Current version is:		$$CURRENT_VERSION"; \
-	NEW_VERSION=$$(awk -F. '{print $$1"."$$2"."$$3+1}' VERSION); \
-	PYPI_VERSION=$$(curl -s https://pypi.org/pypi/$(APP_NAME)/json | jq -r .info.version); \
-	TEST_PYPI_VERSION=$$(curl -s https://test.pypi.org/pypi/$(APP_NAME)/json | jq -r .info.version); \
-	HIGHEST_VERSION=$$(echo -e "$$NEW_VERSION\n$$PYPI_VERSION\n$$TEST_PYPI_VERSION" | sort -V | tail -n 1); \
-	if [ "$$HIGHEST_VERSION" != "$$NEW_VERSION" ]; then \
-		NEW_VERSION=$$(echo $$HIGHEST_VERSION | awk -F. '{print $$1"."$$2"."$$3+1}'); \
-	fi; \
-	echo $$NEW_VERSION > VERSION; \
-	sed -i "s/version=\"[0-9]*\.[0-9]*\.[0-9]*\"/version=\"$$NEW_VERSION\"/" setup.py; \
-	git add VERSION setup.py; \
-	git commit -m "Bump version to $$NEW_VERSION"; \
-	git push origin version-bump; \
-	echo $$NEW_VERSION > VERSION; \
-	echo "New version is:			$$NEW_VERSION"; \
-	sed -i "s/version=\"[0-9]*\.[0-9]*\.[0-9]*\"/version=\"$$NEW_VERSION\"/" setup.py; \
-	@SETUP_VERSION=$$(grep "version=" setup.py | awk -F"'" '{print $$2}'); \
-	if [ "$$NEW_VERSION" != "$$SETUP_VERSION" ]; then \
-		echo "Error: VERSION and setup.py are not in sync"; \
+# Semantic Release
+## release: Perform a semantic release
+release: ensure-node ensure-semantic-release
+	@echo "Starting semantic release..."
+	@semantic-release
+
+## ensure-node: Ensure that node and npm are installed
+ensure-node:
+	@if [ "$$(uname)" = "Linux" ]; then \
+		if [ -f /etc/debian_version ]; then \
+			echo "Detected Debian-based Linux. Installing Node.js..."; \
+			curl -sL https://deb.nodesource.com/setup_16.x | bash -; \
+			apt-get install -y nodejs; \
+		else \
+			echo "Unsupported Linux distribution. Exiting..."; \
+			exit 1; \
+		fi \
+	elif [ "$$(uname)" = "Darwin" ]; then \
+		echo "Detected macOS. Checking for Homebrew..."; \
+		if ! command -v brew >/dev/null 2>&1; then \
+			echo "Homebrew not found. Installing Homebrew..."; \
+			/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
+		fi; \
+		echo "Installing Node.js using Homebrew..."; \
+		brew install node; \
+	else \
+		echo "Unsupported OS. Exiting..."; \
 		exit 1; \
-	fi; \
-	git add VERSION setup.py; \
-	git commit -m "Bump version to $$NEW_VERSION"; \
-	git push origin version-bump
+	fi
+
+## ensure-semantic-release: Ensure that semantic-release is installed
+ensure-semantic-release:
+	@npm list -g --depth=0 | grep semantic-release >/dev/null 2>&1 || { \
+		echo >&2 "semantic-release is not installed. Installing..."; \
+		npm install -g semantic-release; \
+	}
 
 ## generate-pyproject: Generate a pyproject.toml file
 generate-pyproject:
@@ -139,4 +144,23 @@ generate-pyproject:
 	@echo "requires = ['setuptools', 'wheel']" >> pyproject.toml
 	@echo "build-backend = 'setuptools.build_meta'" >> pyproject.toml
 
-.PHONY: clean check-packages sdist wheel upload-test upload install uninstall test update-version generate-pyproject gh-actions
+# Poetry specific targets
+
+## install-poetry: Install all dependencies using poetry
+install-poetry:
+	@poetry install
+
+## develop: Set up the project for development
+develop:
+	@poetry install
+	@poetry shell
+
+## poetry-test: Run tests using poetry
+poetry-test:
+	@poetry run pytest
+
+## poetry-build: Build the project using poetry
+poetry-build:
+	@poetry build
+
+.PHONY: clean check-packages sdist wheel upload-test upload install uninstall test release ensure-node ensure-semantic-release generate-pyproject install-poetry develop poetry-test poetry-build
