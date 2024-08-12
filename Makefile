@@ -88,8 +88,8 @@ push-prep:
 check-packages:
 	@echo "Checking for Poetry installation..."
 	@if ! command -v poetry &> /dev/null; then \
-		echo "Poetry not found. Please install Poetry."; \
-		exit 1; \
+		echo "Poetry not found. Installing Poetry."; \
+		curl -sSL https://install.python-poetry.org | python3 -; \
 	fi
 	@echo "Poetry is installed. Checking dependencies..."
 	@poetry install
