@@ -39,7 +39,6 @@ jobs:
       - name: Run Unit Tests
         run: |
           poetry run pytest
-          echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
