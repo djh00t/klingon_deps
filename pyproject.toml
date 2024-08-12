@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "klingon-deps"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python library for managing environmental dependencies across multiple programming languages and platforms"
 authors = ["David Hooton <klingon_deps+david@hooton.org>"]
 license = "MIT"
