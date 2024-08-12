@@ -1,11 +1,10 @@
-name: "00 - Labeller 🏷️"
+name: "🏷️ Labeller"
 
 on:
   pull_request_target:
     types: [opened, synchronize]
   issues:
     types: [opened, edited]
-  workflow_dispatch:
 
 jobs:
   label:
@@ -29,9 +28,6 @@ jobs:
         elif [[ ${{ github.event.issue.title }} =~ \[documentation\] ]]; then
           gh issue edit ${{ github.event.issue.number }} --add-label 'type/documentation'
         fi
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Label PRs Based on Branch Name
       if: github.event_name == 'pull_request_target'
@@ -42,10 +38,6 @@ jobs:
           issue_type=${issue_type%%-*}
           gh pr edit ${{ github.event.pull_request.number }} --add-label "type/$issue_type"
         fi
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
     - name: Apply Labels Based on File Changes
       uses: actions/labeler@v5
@@ -53,6 +45,3 @@ jobs:
         configuration-path: '.github/labeller.yaml'
         sync-labels: true
         dot: true
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
