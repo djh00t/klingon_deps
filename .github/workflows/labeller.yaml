@@ -29,6 +29,8 @@ jobs:
         elif [[ ${{ github.event.issue.title }} =~ \[documentation\] ]]; then
           gh issue edit ${{ github.event.issue.number }} --add-label 'type/documentation'
         fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Label PRs Based on Branch Name
       if: github.event_name == 'pull_request_target'
@@ -39,6 +41,8 @@ jobs:
           issue_type=${issue_type%%-*}
           gh pr edit ${{ github.event.pull_request.number }} --add-label "type/$issue_type"
         fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Apply Labels Based on File Changes
       uses: actions/labeler@v5
@@ -46,3 +50,5 @@ jobs:
         configuration-path: '.github/labeller.yaml'
         sync-labels: true
         dot: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
