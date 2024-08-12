@@ -86,16 +86,6 @@ push-prep:
 	@find . -type f -name '*.pyc' -delete
 	@echo "Removed temporary files..................................................... ✅"
 
-# Check for required pip packages and install if missing
-check-packages:
-	@echo "Checking for Poetry installation..."
-	@if ! command -v poetry &> /dev/null; then \
-		echo "Poetry not found. Installing Poetry."; \
-		curl -sSL https://install.python-poetry.org | python3 -; \
-	fi
-	@echo "Poetry is installed. Checking dependencies..."
-	@poetry install
-
 # Create a source distribution package
 sdist: clean
 	@echo "Creating source distribution..."
@@ -120,6 +110,16 @@ upload: test wheel
 install:
 	@echo "Installing dependencies..."
 	@poetry install
+
+# Install the development dependencies and the package locally
+install-dev:
+	@echo "Checking for Poetry installation..."
+	@if ! command -v poetry &> /dev/null; then \
+		echo "Poetry not found. Installing Poetry."; \
+		curl -sSL https://install.python-poetry.org | python3 -; \
+	fi
+	@echo "Poetry is installed. Checking dependencies..."
+	@poetry install --with dev
 
 # Uninstall the local package
 uninstall:
