@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize]
   issues:
     types: [opened, edited]
+  workflow_dispatch:
 
 jobs:
   label:
