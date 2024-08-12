@@ -50,7 +50,9 @@ jobs:
             ${{ runner.os }}-pip-cache-
 
       - name: Install Dependencies
-        run: poetry install
+        run: |
+          pip install poetry
+          poetry install
 
       - name: Run Unit Tests
         run: poetry run pytest
