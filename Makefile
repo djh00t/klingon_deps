@@ -80,6 +80,8 @@ clean:
 
 # Pre-push cleanup target
 push-prep:
+	@echo "Running poetry lock........................................................... 🔒"
+	@poetry lock
 	@echo "Removing temporary files.................................................... 🧹"
 	@find . -type f -name '*.pyc' -delete
 	@echo "Removed temporary files..................................................... ✅"
