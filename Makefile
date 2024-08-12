@@ -24,7 +24,7 @@ ensure-node: fetch-latest-node-version install-latest-nvm
 		if [ -f /etc/debian_version ]; then \
 			echo "Detected Debian-based Linux. Installing Node.js $$(cat .latest_node_version)..."; \
 			curl -sL https://deb.nodesource.com/setup_$$(cat .latest_node_version | cut -d'.' -f1).x | bash -; \
-			apt-get install -y nodejs; \
+			sudo apt-get install -y nodejs; \
 		else \
 			echo "Unsupported Linux distribution. Exiting..."; \
 			exit 1; \
@@ -61,7 +61,6 @@ ensure-semantic-release:
 # Clean the repository
 clean:
 	@echo "Cleaning up repo............................................................. 🧹"
-	@make push-prep
 	@pre-commit clean
 	@find . -type f -name '*.pyc' -delete
 	@find . -type d -name '__pycache__' -exec rm -rf {} +
@@ -78,87 +77,51 @@ clean:
 	@rm -rf node_modules
 	@echo "Repo cleaned up............................................................... ✅"
 
-# Pre-push cleanup target
-push-prep:
-	@echo "Removing temporary files.................................................... 🧹"
-	@find . -type f -name '*.pyc' -delete
-	@if [ -f requirements.txt ]; then \
-		echo "Resetting requirements.txt to empty state................................... ✅"; \
-		rm -rf requirements.txt; \
-		touch requirements.txt; \
-	fi
-	@if [ -f requirements-dev.txt ]; then \
-		echo "Resetting requirements-dev.txt to empty state............................... ✅"; \
-		rm -rf requirements-dev.txt; \
-		touch requirements-dev.txt; \
-	fi
-	@echo "Removed temporary files..................................................... ✅"
-
-# Check for required pip packages and requirements.txt, install if missing
+# Check for required pip packages and install if missing
 check-packages:
-	@echo "Installing pip-tools..."
-	@pip install pip-tools
-	@echo "Compiling requirements.txt..."
-	@pip-compile requirements.in
-	@echo "Checking for required pip packages and requirements.txt..."
-	@if [ ! -f requirements.txt ]; then \
-		echo "requirements.txt not found. Please add it to the project root."; \
-		exit 1; \
-	fi
-	@echo "Installing missing packages from requirements.txt..."
-	@pip install -r requirements.txt
-	@pre-commit install --overwrite
+	@echo "Checking for required pip packages..."
+	@poetry install
 
 # Create a source distribution package
 sdist: clean
-	python setup.py sdist
+	poetry build --format sdist
 
 # Create a wheel distribution package
 wheel: clean
-	python setup.py sdist bdist_wheel
+	poetry build --format wheel
 
 # Upload to TestPyPI
 upload-test: test wheel
 	@echo "Uploading Version $$NEW_VERSION to TestPyPI..."
-	twine upload --repository-url https://test.pypi.org/legacy/ --username $(TWINE_USERNAME) --password $(TEST_TWINE_PASSWORD) dist/*
+	poetry publish --repository testpypi -u $(TWINE_USERNAME) -p $(TEST_TWINE_PASSWORD)
 
 # Upload to PyPI
 upload: test wheel
 	@echo "Uploading Version $$NEW_VERSION to PyPI..."
-	twine upload --username $(TWINE_USERNAME) --password $(PYPI_TWINE_PASSWORD) dist/*
+	poetry publish -u $(TWINE_USERNAME) -p $(PYPI_USER_AGENT)
 
 # Install the package locally
 install:
 	@echo "Checking for requirements..."
 	@make check-packages
 	@echo "Installing $$APP_NAME..."
-	@pip install -e .
-
-# Install the package locally using pip
-install-pip:
-	pip install $(APP_NAME)
-
-# Install the package locally using pip from TestPyPI
-install-pip-test:
-	pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple $(APP_NAME)
+	poetry install
 
 # Uninstall the local package
 uninstall:
-	pip uninstall $(APP_NAME)
+	poetry remove $(APP_NAME)
 
 # Run tests
 test:
 	@echo "Running unit tests..."
-	@make poetry-test
-#	pytest -v --tb=short tests/
-#	pytest --no-header --no-summary -v --disable-warnings tests/
+	poetry run pytest -v --tb=short tests/
 
 # Perform a semantic release
 release: ensure-node ensure-semantic-release
 	@echo "Starting semantic release..."
 	@semantic-release
 
-# Generate a pyproject.toml file
+# Generate a pyproject.toml file (if not present)
 generate-pyproject:
 	@echo "[build-system]" > pyproject.toml
 	@echo "requires = ['setuptools', 'wheel']" >> pyproject.toml
