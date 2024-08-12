@@ -23,7 +23,7 @@ ensure-node: fetch-latest-node-version install-latest-nvm
 	@if [ "$$(uname)" = "Linux" ]; then \
 		if [ -f /etc/debian_version ]; then \
 			echo "Detected Debian-based Linux. Installing Node.js $$(cat .latest_node_version)..."; \
-			curl -sL https://deb.nodesource.com/setup_$$(cat .latest_node_version | cut -d'.' -f1).x | bash -; \
+			curl -sL https://deb.nodesource.com/setup_$$(cat .latest_node_version | cut -d'.' -f1).x | sudo bash -; \
 			sudo apt-get install -y nodejs; \
 		else \
 			echo "Unsupported Linux distribution. Exiting..."; \
@@ -98,7 +98,7 @@ upload-test: test wheel
 # Upload to PyPI
 upload: test wheel
 	@echo "Uploading Version $$NEW_VERSION to PyPI..."
-	poetry publish -u $(TWINE_USERNAME) -p $(PYPI_USER_AGENT)
+	poetry publish -u $(TWINE_USERNAME) -p $(PYPI_TWINE_PASSWORD)
 
 # Install the package locally
 install:
@@ -127,6 +127,15 @@ generate-pyproject:
 	@echo "requires = ['setuptools', 'wheel']" >> pyproject.toml
 	@echo "build-backend = 'setuptools.build_meta'" >> pyproject.toml
 
+# Prepare for a push (tagging, etc.)
+push-prep:
+	@echo "Preparing for push..."
+	@poetry version patch
+	@git add pyproject.toml poetry.lock
+	@git commit -m "Bump version"
+	@git tag -a "v$$(poetry version --short)" -m "Release v$$(poetry version --short)"
+	@git push origin main --tags
+
 # Poetry specific targets
 install-poetry:
 	@poetry install
@@ -144,4 +153,4 @@ poetry-test:
 poetry-build:
 	@poetry build
 
-.PHONY: clean check-packages sdist wheel upload-test upload install uninstall test release ensure-node ensure-semantic-release install-latest-nvm generate-pyproject install-poetry develop poetry-test poetry-build
+.PHONY: clean check-packages sdist wheel upload-test upload install uninstall test release ensure-node ensure-semantic-release install-latest-nvm generate-pyproject push-prep install-poetry develop poetry-test poetry-build
