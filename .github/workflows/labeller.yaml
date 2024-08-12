@@ -1,4 +1,4 @@
-name: "🏷️ Labeller"
+name: "00 - Labeller 🏷️"
 
 on:
   pull_request_target:
