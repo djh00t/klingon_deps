@@ -31,6 +31,7 @@ jobs:
         fi
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Label PRs Based on Branch Name
       if: github.event_name == 'pull_request_target'
@@ -43,6 +44,8 @@ jobs:
         fi
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
     - name: Apply Labels Based on File Changes
       uses: actions/labeler@v5
@@ -52,3 +55,4 @@ jobs:
         dot: true
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
