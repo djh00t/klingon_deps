@@ -1,127 +1,247 @@
 # Klingon Deps
 
-Klingon Deps is a dependency management library for multi-language projects.
+Klingon Deps is a powerful Python library for managing project dependencies across multiple programming languages. It leverages GitHub Linguist to detect languages in your project and provides an interactive interface for enabling or disabling language-specific dependencies.
 
 ## Features
 
-- Scan repositories for programming languages
-- Manage language configurations in `.klingon_user.yaml`
-- Install dependencies from YAML configuration files
+- Automatic language detection using GitHub Linguist
+- Interactive language activation/deactivation
+- Support for multiple programming languages
+- Customizable dependency configuration
+- Git repository awareness
 
 ## Installation
 
+You can install Klingon Deps using pip:
+
+```bash
+pip install klingon-deps
 ```
-pip install klingon_deps
+
+## Requirements
+
+- Python 3.7+
+- GitHub Linguist
+- GitPython
+
+## Quick Start
+
+1. Install Klingon Deps in your project:
+
+```bash
+pip install klingon-deps
 ```
+
+2. Run the Klingon Deps command to detect languages and set up dependencies:
+
+```bash
+klingon-deps
+```
+
+3. Follow the interactive prompts to enable or disable detected languages.
 
 ## Usage
 
-Scan repository and configure languages:
-```
-klingon_deps --scan
-```
+### Command Line Interface
 
-Install dependencies:
-```
-klingon_deps
+The primary way to use Klingon Deps is through its command-line interface:
+
+```bash
+klingon-deps [options]
 ```
 
-## Configuration Files
+Options:
+- `--verbose`: Enable verbose logging
+- `--scan`: Scan the repository for languages (default behavior)
 
-### 1. `.klingon_pkg_deps.yaml`
+### As a Python Library
 
-This is the main dependency configuration file. It should be located in the root of the repository by default.
+You can also use Klingon Deps as a Python library in your scripts:
 
-### 2. `.klingon_user.yaml`
+```python
+from klingon_deps import LanguageDetector, ConfigManager
 
-This file contains user-specific configurations, including enabled languages.
+# Initialize the config manager and language detector
+config_manager = ConfigManager()
+detector = LanguageDetector(verbose=True, config_manager=config_manager)
 
-## Dependency Resolution Process
+# Detect languages
+detected_languages = detector.detect_languages()
 
-1. The tool first looks for `.klingon_pkg_deps.yaml` in the root of the repository.
-2. If not found, it checks for a file specified by the `--pkgdep` argument.
-3. If neither is found, it looks for `.klingon_user.yaml` in the root of the repository.
-4. If none of the above files are found, it runs a scan process over the current repository to generate a configuration.
+# Print detected languages
+print("Detected Languages:")
+for lang, percentage in detected_languages:
+    print(f"{lang}: {percentage}")
 
-## `.klingon_pkg_deps.yaml` File Format
+# Prompt user for language activation
+language_status = detector.prompt_user_for_languages(detected_languages)
 
-The `.klingon_pkg_deps.yaml` file specifies project dependencies. It supports OS-specific, language-specific, and general dependencies. Here's the format:
+# Print language activation status
+detector.print_language_activation_status(language_status)
+```
+
+## Configuration
+
+### .klingon_pkg_dep.yaml
+
+This file defines the dependencies for each supported language. Klingon Deps looks for this file in the following locations, in order:
+
+1. In the `klingon_deps` directory of the installed package
+2. In the root of your Git repository
+
+Example `.klingon_pkg_dep.yaml`:
 
 ```yaml
 dependencies:
-  - name: dependency_name
-    version: version_specifier
-    type: dependency_type
-    os: operating_system
-    language: programming_language
-    manager: package_manager
-    command: install_command
-```
+  - name: github-linguist
+    type: tool
+    install:
+      macos:
+        - brew install github-linguist
+      ubuntu:
+        - sudo apt-get install -y github-linguist
 
-### Fields:
+  - name: python
+    type: language
+    install:
+      macos:
+        - brew install python
+      ubuntu:
+        - sudo apt-get install -y python3
 
-- `name`: (Required) Name of the dependency.
-- `version`: (Optional) Version specifier (e.g., ">=1.0.0", "==2.1.0").
-- `type`: (Optional) Type of dependency (e.g., "library", "tool", "framework").
-- `os`: (Optional) Operating system (e.g., "linux", "macos", "windows", "all").
-- `language`: (Optional) Programming language (e.g., "python", "javascript", "rust").
-- `manager`: (Optional) Package manager to use (e.g., "pip", "npm", "cargo").
-- `command`: (Optional) Custom install command if the standard package manager command doesn't suffice.
-
-### Example `.klingon_pkg_deps.yaml`:
-
-```yaml
-dependencies:
-  - name: requests
-    version: ">=2.25.1"
-    type: library
-    language: python
-    manager: pip
-
-  - name: nodejs
-    version: "14.x"
+  - name: node
     type: runtime
-    os: linux
-    command: |
-      curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
-      sudo apt-get install -y nodejs
+    install:
+      macos:
+        - brew install node
+      ubuntu:
+        - curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+        - sudo apt-get install -y nodejs
 
   - name: rust
     type: language
-    os: all
-    command: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    install:
+      macos:
+        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+      ubuntu:
+        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-  - name: react
-    version: "^17.0.2"
-    type: framework
-    language: javascript
-    manager: npm
+  - name: go
+    type: language
+    install:
+      macos:
+        - brew install go
+      ubuntu:
+        - sudo apt-get install -y golang-go
 
-  - name: sqlalchemy
-    version: ">=1.4.0"
-    type: library
-    language: python
-    manager: pip
-    os: all
+  # Add more language-specific dependencies here
 ```
 
-## `.klingon_user.yaml` File Format
+In this expanded example, we've added more languages and runtimes to showcase the flexibility of the `.klingon_pkg_dep.yaml` file. You can specify different installation commands for different operating systems, and include various types of dependencies (languages, tools, runtimes, etc.).
 
-This file contains user-specific configurations, including enabled languages.
+### .klingon_user.yaml
+
+This file stores user-specific configurations, including enabled and disabled languages. It's typically located in the root of your project.
+
+Example `.klingon_user.yaml`:
 
 ```yaml
 enabled_languages:
-  - python
-  - javascript
-  - rust
+  - Python
+  - JavaScript
+  - Rust
+
+disabled_languages:
+  - Ruby
+  - Go
 
 user_preferences:
-  default_package_manager: pip
+  default_package_manager: npm
   auto_update: true
 ```
 
-The `klingon_deps` tool will process these files and install the dependencies based on the current operating system, specified languages, and other criteria.
+This example shows how you can not only specify enabled and disabled languages but also set user preferences that could be used by Klingon Deps for further customization of its behavior.
+
+## Detailed Usage Examples
+
+### Basic Repository Scan
+
+To perform a basic scan of your current repository:
+
+```bash
+cd /path/to/your/repo
+klingon-deps
+```
+
+This will:
+1. Detect languages in your repository
+2. Display a table of detected languages with their percentages
+3. Prompt you to enable/disable each detected language
+4. Update your `.klingon_user.yaml` file with your choices
+
+### Verbose Scan with Custom Dependency File
+
+For a more detailed output and using a custom dependency file:
+
+```bash
+klingon-deps --verbose --pkgdep /path/to/custom/.klingon_pkg_dep.yaml
+```
+
+This command will:
+1. Use the specified custom dependency file
+2. Provide detailed logging of the detection and installation process
+3. Show you exactly what's happening at each step
+
+### Using Klingon Deps in a Python Script
+
+Here's a more detailed example of using Klingon Deps in a Python script:
+
+```python
+from klingon_deps import LanguageDetector, ConfigManager, DependencyManager
+
+# Initialize components
+config_manager = ConfigManager()
+detector = LanguageDetector(verbose=True, config_manager=config_manager)
+dep_manager = DependencyManager(verbose=True)
+
+# Install dependencies
+dep_manager.install_dependencies()
+
+# Detect languages
+detected_languages = detector.detect_languages()
+
+print("Detected Languages:")
+for lang, percentage in detected_languages:
+    print(f"{lang}: {percentage}")
+
+# Prompt user for language activation
+language_status = detector.prompt_user_for_languages(detected_languages)
+
+# Print language activation status
+detector.print_language_activation_status(language_status)
+
+# Get enabled languages
+enabled_langs = config_manager.get_enabled_languages()
+print(f"Enabled languages: {', '.join(enabled_langs)}")
+
+# Update a language status
+config_manager.update_language("Python", True)
+```
+
+This script demonstrates how to use various components of Klingon Deps to detect languages, manage dependencies, and update configurations programmatically.
+
+## Contributing
+
+We welcome contributions to Klingon Deps! Please see our [Contributing Guide](CONTRIBUTING.md) for more details.
 
 ## License
 
-This project is licensed under the MIT License.
+Klingon Deps is released under the MIT License. See the [LICENSE](LICENSE) file for more details.
+
+## Support
+
+If you encounter any issues or have questions, please file an issue on the [GitHub issue tracker](https://github.com/yourusername/klingon_deps/issues).
+
+## Acknowledgements
+
+Klingon Deps makes use of the excellent [GitHub Linguist](https://github.com/github/linguist) tool for language detection.
