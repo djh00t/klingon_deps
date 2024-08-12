@@ -111,7 +111,7 @@ for message in commit_messages:
     for change_type, _ in types.items():
         if re.match(
             rf"^[\U0001F300-\U0001F5FF\u2000-\u3300]*{change_type}"
-            rf"\(\S+\):",
+            rf"\(.*?\):",
             message,
             re.UNICODE,
         ) or re.match(
@@ -130,7 +130,7 @@ for message in commit_messages:
             for change_type, _ in types.items():
                 if re.match(
                     rf"^[\U0001F300-\U0001F5FF\u2000-\u3300]*{change_type}"
-                    rf"\(\S+\):",
+                    rf"\(.*?\):",
                     message,
                     re.UNICODE,
                 ) or re.match(
