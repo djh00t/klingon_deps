@@ -1,7 +1,7 @@
 module.exports = {
   branches: [
     { name: "main" },
-    { name: "release" }
+    { name: "release" },
     { name: 'pre-release-*', prerelease: true }
   ],
   repositoryUrl: "https://github.com/djh00t/klingon_deps.git",
