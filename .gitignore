@@ -40,3 +40,5 @@ wheels/
 # macOS
 .DS_Store
 .aider*
+
+node_modules/** */
