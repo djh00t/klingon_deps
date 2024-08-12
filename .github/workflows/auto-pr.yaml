@@ -6,6 +6,7 @@ on:
       - main
       - master
       - release
+      - pre-release
       - pre-release-*
   workflow_dispatch:
 
