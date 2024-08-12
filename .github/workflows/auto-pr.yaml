@@ -29,6 +29,9 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Install Poetry
+        run: curl -sSL https://install.python-poetry.org | python3 -
+
       - name: Load Python cache
         uses: actions/cache@v4.0.2
         with:
@@ -96,7 +99,7 @@ jobs:
               echo "PR_URL: $PR_URL"
           fi
 
-          PR_BODY=$(python3 .github/workflows/pr_body_gen.py $SOURCE_BRANCH $BASE_BRANCH)
+          PR_BODY=$(poetry run python3 .github/workflows/pr_body_gen.py $SOURCE_BRANCH $BASE_BRANCH)
           gh pr edit $PR_URL --title "$PR_TITLE" --body "$PR_BODY"
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
