@@ -61,6 +61,7 @@ ensure-semantic-release:
 # Clean the repository
 clean:
 	@echo "Cleaning up repo............................................................. 🧹"
+	@make push-prep
 	@pre-commit clean
 	@find . -type f -name '*.pyc' -delete
 	@find . -type d -name '__pycache__' -exec rm -rf {} +
@@ -77,80 +78,66 @@ clean:
 	@rm -rf node_modules
 	@echo "Repo cleaned up............................................................... ✅"
 
+# Pre-push cleanup target
+push-prep:
+	@echo "Removing temporary files.................................................... 🧹"
+	@find . -type f -name '*.pyc' -delete
+	@echo "Removed temporary files..................................................... ✅"
+
 # Check for required pip packages and install if missing
 check-packages:
-	@echo "Checking for required pip packages..."
+	@echo "Checking for Poetry installation..."
+	@if ! command -v poetry &> /dev/null; then \
+		echo "Poetry not found. Please install Poetry."; \
+		exit 1; \
+	fi
+	@echo "Poetry is installed. Checking dependencies..."
 	@poetry install
 
 # Create a source distribution package
 sdist: clean
-	poetry build --format sdist
+	@echo "Creating source distribution..."
+	@poetry build --format sdist
 
 # Create a wheel distribution package
 wheel: clean
-	poetry build --format wheel
+	@echo "Creating wheel distribution..."
+	@poetry build --format wheel
 
 # Upload to TestPyPI
 upload-test: test wheel
-	@echo "Uploading Version $$NEW_VERSION to TestPyPI..."
-	poetry publish --repository testpypi -u $(TWINE_USERNAME) -p $(TEST_TWINE_PASSWORD)
+	@echo "Uploading Version to TestPyPI..."
+	@poetry publish --repository testpypi --username $(TWINE_USERNAME) --password $(TEST_TWINE_PASSWORD)
 
 # Upload to PyPI
 upload: test wheel
-	@echo "Uploading Version $$NEW_VERSION to PyPI..."
-	poetry publish -u $(TWINE_USERNAME) -p $(PYPI_TWINE_PASSWORD)
+	@echo "Uploading Version to PyPI..."
+	@poetry publish --username $(TWINE_USERNAME) --password $(PYPI_TWINE_PASSWORD)
 
 # Install the package locally
 install:
-	@echo "Checking for requirements..."
-	@make check-packages
-	@echo "Installing $$APP_NAME..."
-	poetry install
+	@echo "Installing dependencies..."
+	@poetry install
 
 # Uninstall the local package
 uninstall:
-	poetry remove $(APP_NAME)
+	@echo "Uninstalling $(APP_NAME)..."
+	@poetry remove $(APP_NAME)
 
 # Run tests
 test:
 	@echo "Running unit tests..."
-	poetry run pytest -v --tb=short tests/
+	@poetry run pytest
+
+# Get developer information
+get-developer-info:
+	@echo "Fetching commit author information..."
+	@COMMIT_AUTHOR=$$(git log -1 --pretty=format:'%an')
+	@echo "This code was committed by $$COMMIT_AUTHOR"
 
 # Perform a semantic release
 release: ensure-node ensure-semantic-release
 	@echo "Starting semantic release..."
 	@semantic-release
 
-# Generate a pyproject.toml file (if not present)
-generate-pyproject:
-	@echo "[build-system]" > pyproject.toml
-	@echo "requires = ['setuptools', 'wheel']" >> pyproject.toml
-	@echo "build-backend = 'setuptools.build_meta'" >> pyproject.toml
-
-# Prepare for a push (tagging, etc.)
-push-prep:
-	@echo "Preparing for push..."
-	@poetry version patch
-	@git add pyproject.toml poetry.lock
-	@git commit -m "Bump version"
-	@git tag -a "v$$(poetry version --short)" -m "Release v$$(poetry version --short)"
-	@git push origin main --tags
-
-# Poetry specific targets
-install-poetry:
-	@poetry install
-
-# Set up the project for development
-develop:
-	@poetry install
-	@poetry shell
-
-# Run tests using poetry
-poetry-test:
-	@poetry run pytest
-
-# Build the project using poetry
-poetry-build:
-	@poetry build
-
-.PHONY: clean check-packages sdist wheel upload-test upload install uninstall test release ensure-node ensure-semantic-release install-latest-nvm generate-pyproject push-prep install-poetry develop poetry-test poetry-build
+.PHONY: clean check-packages sdist wheel upload-test upload install uninstall test push-prep get-developer-info release
