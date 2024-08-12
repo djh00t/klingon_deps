@@ -7,9 +7,4 @@ setup(
     install_requires=[
         "pyyaml",
     ],
-    entry_points={
-        "console_scripts": [
-            "klingon-deps=klingon_deps.cli:main",
-        ],
-    },
 )
