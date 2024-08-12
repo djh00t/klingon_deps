@@ -6,6 +6,7 @@ on:
       - main
       - master
       - release
+      - pre-release-*
   workflow_dispatch:
 
 jobs:
@@ -70,6 +71,10 @@ jobs:
           echo "PR_TITLE: $PR_TITLE"
           if [ "$SOURCE_BRANCH" = "release" ]; then
               BASE_BRANCH="main"
+          elif [[ "$SOURCE_BRANCH" == pre-release-* ]]; then
+              BASE_BRANCH="release"
+          elif [[ "$SOURCE_BRANCH" == dev-* ]]; then
+              BASE_BRANCH="pre-release"
           else
               BASE_BRANCH="release"
           fi
