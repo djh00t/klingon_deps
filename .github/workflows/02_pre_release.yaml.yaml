@@ -1,11 +1,9 @@
-name: 🤖 Auto PR
+name: 02 - Pre-Release 🚧
 
 on:
   push:
-    branches-ignore:
-      - main
-      - master
-      - release
+    branches:
+      - pre-release
       - pre-release-*
   workflow_dispatch:
 
@@ -20,9 +18,9 @@ jobs:
           ref: ${{ github.ref }}  # Check out the branch that triggered the workflow
           fetch-depth: 0          # Fetch all history for the branch
 
-      - name: Fetch the pre-release branch
+      - name: Fetch the release branch
         run: |
-          git fetch origin pre-release:pre-release
+          git fetch origin release:release
 
       - name: Setup Python
         uses: actions/setup-python@v5.1.0
@@ -30,7 +28,10 @@ jobs:
           python-version: "3.x"
 
       - name: Install Poetry
-        run: curl -sSL https://install.python-poetry.org | python3 -
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "Poetry installed"
+          which poetry
 
       - name: Load Python cache
         uses: actions/cache@v4.0.2
