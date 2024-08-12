@@ -14,8 +14,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout the current branch
         uses: actions/checkout@v4.1.7
+        with:
+          ref: ${{ github.ref }}  # Check out the branch that triggered the workflow
+          fetch-depth: 0          # Fetch all history for the branch
+
+      - name: Fetch the pre-release branch
+        run: |
+          git fetch origin pre-release:pre-release
 
       - name: Setup Python
         uses: actions/setup-python@v5.1.0
