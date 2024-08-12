@@ -1,4 +1,4 @@
-name: 🤖 Auto PR
+name: 01 - Auto PR 🤖
 
 on:
   push:
