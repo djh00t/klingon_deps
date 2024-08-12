@@ -51,7 +51,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install poetry
+          pip install poetry klingon_tools
           poetry install
 
       - name: Run Unit Tests
