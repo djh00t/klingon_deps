@@ -8,9 +8,12 @@ PYPI_TWINE_PASSWORD ?= $(PYPI_USER_AGENT)
 
 # Fetch the latest Node.js version
 fetch-latest-node-version:
-	@echo "Fetching the latest Node.js version..."
 	@curl -s https://nodejs.org/dist/index.json | grep '"version"' | head -1 | awk -F'"' '{print $$4}' > .latest_node_version
-	@echo "Latest Node.js version fetched: $$(cat .latest_node_version)"
+	@echo $$(cat .latest_node_version)"
+
+# Get first octet of current node version
+node-major-version:
+	@curl -s https://nodejs.org/dist/index.json | grep '"version"' | head -1 | awk -F'"' '{print $$4}' | sed 's/^v//' | awk -F'.' '{print $$1}'
 
 # Install the latest version of nvm
 install-latest-nvm:

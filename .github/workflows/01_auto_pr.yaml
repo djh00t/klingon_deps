@@ -30,9 +30,6 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install Poetry
-        run: curl -sSL https://install.python-poetry.org | python3 -
-
       - name: Load Python cache
         uses: actions/cache@v4.0.2
         with:
@@ -41,9 +38,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-cache-
 
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "Poetry installed"
+          which poetry
+
       - name: Install Dependencies
         run: |
           make install-dev
+          echo "NODE_MAJOR_VERSION=$(make node-major-version)" >> $GITHUB_ENV
 
       - name: Run Unit Tests
         run: |
