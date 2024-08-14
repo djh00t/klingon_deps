@@ -15,7 +15,7 @@ module.exports = {
       "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
     }],
   ],
-  preset: "conventional-changelog-conventionalcommits",
+  preset: "conventionalcommits",
   releaseRules: [
     { type: "build", release: "patch" },
     { type: "chore", release: "patch" },
