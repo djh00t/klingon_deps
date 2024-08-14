@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "klingon-deps"
-version = ""
+version = "0.0.1"
 description = "Python library for managing environmental dependencies across multiple programming languages and platforms"
 authors = ["David Hooton <klingon_deps+david@hooton.org>"]
 license = "MIT"
@@ -78,7 +78,14 @@ ignore_patterns = ["temp/**/*.py", "temp2/*.py"]
 exclude = "tmp/"
 
 [tool.semantic_release]
-version = ""
+version_variable = ["pyproject.toml:version", "klingon_deps/__init__.py:__version__"]
+version_toml = ["pyproject.toml:tool.poetry.version"]
+version_pattern = ["README.md:version-{version}"]
+major_on_zero = false
+branch = "main"
+upload_to_pypi = true
+upload_to_release = true
+build_command = "pip install poetry && poetry build"
 
 [tool.pytest.ini_options]
 addopts = "-ra -q"
