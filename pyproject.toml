@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "klingon-deps"
-version = "0.1.2"
+version = ""
 description = "Python library for managing environmental dependencies across multiple programming languages and platforms"
 authors = ["David Hooton <klingon_deps+david@hooton.org>"]
 license = "MIT"
@@ -78,7 +78,7 @@ ignore_patterns = ["temp/**/*.py", "temp2/*.py"]
 exclude = "tmp/"
 
 [tool.semantic_release]
-version = "0.1.0"
+version = ""
 
 [tool.pytest.ini_options]
 addopts = "-ra -q"
