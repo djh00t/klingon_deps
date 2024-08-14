@@ -22,8 +22,26 @@ jobs:
         run: |
           git fetch origin release:release
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.4.1"
+
+      - name: Load Node.js cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-cache
+          restore-keys: |
+            ${{ runner.os }}-node-cache-
+
+      - name: Install semantic-release & Node.js dependencies
+        run: |
+          npm install
+          npm ci
+
       - name: Setup Python
-        uses: actions/setup-python@v5.1.0
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -51,6 +69,14 @@ jobs:
           poetry run pytest
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Authenticate GitHub CLI
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Configure Git & Login to GitHub CLI
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
 
       - name: Create or Update PR
         id: pr
